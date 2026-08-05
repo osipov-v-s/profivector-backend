@@ -7,8 +7,6 @@ import com.profession.suggest.database.repositories.auth.AccountRepository;
 import com.profession.suggest.database.services.auth.role.RoleService;
 import com.profession.suggest.dto.auth.AccountDTO;
 import com.profession.suggest.dto.auth.AccountRegisterRequestDTO;
-import com.profession.suggest.dto.auth.RoleDTO;
-import com.profession.suggest.dto.pupil.PupilResponseDTO;
 import com.profession.suggest.services.jwt.JWTService;
 import org.apache.coyote.BadRequestException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +18,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class AccountService {
@@ -45,6 +45,8 @@ public class AccountService {
         if (account == null)
             throw new AccountNotFoundException("Email or password incorrect");
         if (!passwordEncoder.matches(accountDTO.getPassword(), account.getPassword()))
+            throw new AccountNotFoundException("Email or password incorrect");
+        if (account.getApplicant() != null && !account.getApplicant().isActive())
             throw new AccountNotFoundException("Email or password incorrect");
         String token = jwtService.generateTokenWithAccountInfo(account);
         if (account.getFirstLogin()) account.setFirstLogin(false);
@@ -91,9 +93,6 @@ public class AccountService {
         repository.save(account);
     }
 
-    public PupilResponseDTO getPupilDataByAccountId(Long id) {
-        return repository.findPupilDataByAccountId(id);
-    }
     public Account getAccountById(Long id) throws AccountNotFoundException {
         return repository.findById(id).orElseThrow(() -> new AccountNotFoundException("ss"));
     }
@@ -108,6 +107,12 @@ public class AccountService {
     public Set<Account> getAccountsByRole(RoleEnum roleName) {
         Role role = roleService.findByName(roleName);
         return role.getAccounts();
+    }
+
+    public Page<Account> getAccountsByCompany(Long companyId, RoleEnum role, Pageable pageable) {
+        return role == null
+                ? repository.findByCompanyId(companyId, pageable)
+                : repository.findByCompanyIdAndRole(companyId, role, pageable);
     }
 
 }

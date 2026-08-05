@@ -1,6 +1,6 @@
 package com.profession.suggest.database.entities.dataanalys.prediction;
 
-import com.profession.suggest.database.entities.users.pupil.Pupil;
+import com.profession.suggest.database.entities.users.applicant.Applicant;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,8 +23,8 @@ public class Prediction {
     @JoinColumn(name = "prediction_type_id", nullable = false)
     private PredictionType predictionType;
     @ManyToOne
-    @JoinColumn(name = "pupil_id", nullable = false)
-    private Pupil pupil;
+    @JoinColumn(name = "applicant_id", nullable = false)
+    private Applicant applicant;
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

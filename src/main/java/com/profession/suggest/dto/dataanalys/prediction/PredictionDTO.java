@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class PredictionDTO {
     private Long id;
-    private Long pupilId;
+    private Long applicantId;
     private String filePath;
     private PredictionTypeEnum predictionType;
     private LocalDateTime createdAt;

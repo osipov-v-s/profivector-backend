@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.time.LocalDate;
+import com.profession.suggest.database.entities.gender.GenderEnum;
 
 @Data
 @Builder
@@ -26,4 +28,9 @@ public class CreateEmployeeRequest {
     private String companyName;
     private String companyInn;
     private String companyOgrn;
+    // Applicant fields (required only for APPLICANT)
+    private LocalDate birthday;
+    private GenderEnum gender;
+    private Long targetProfessionId;
+    private Boolean active;
 }

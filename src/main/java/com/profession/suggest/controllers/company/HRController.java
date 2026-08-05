@@ -2,6 +2,7 @@ package com.profession.suggest.controllers.company;
 
 import com.profession.suggest.configuration.security.annotation.HasRole;
 import com.profession.suggest.database.entities.auth.role.RoleEnum;
+import com.profession.suggest.database.services.auth.AccountService;
 import com.profession.suggest.database.services.specialist.CompanyService;
 import com.profession.suggest.dto.company.CreateEmployeeRequest;
 import lombok.AllArgsConstructor;
@@ -18,6 +19,7 @@ import java.util.List;
 @RequestMapping("/api/hr")
 public class HRController {
     private final CompanyService companyService;
+    private final AccountService accountService;
     /**
      * Admin creates HR with company
      */
@@ -47,11 +49,18 @@ public class HRController {
             @RequestAttribute("accountId") Long accountId,
             @RequestBody CreateEmployeeRequest request) {
         try {
-            if (request.getRoles() == null || request.getRoles().size() == 0)
+            if (request.getRoles() == null || request.getRoles().isEmpty())
                 request.setRoles(List.of(RoleEnum.SPECIALIST));
-            if (request.getCompanyName() == null || request.getCompanyName().isEmpty()) {
-                var company = companyService.getCompanyByAccountId(accountId);
-                request.setCompanyName(company.getName());
+            var actor = accountService.getAccountById(accountId);
+            boolean admin = actor.getRoles().stream()
+                    .anyMatch(role -> role.getName() == RoleEnum.ADMIN);
+            if (!admin) {
+                if (actor.getCompany() == null) {
+                    throw new IllegalArgumentException("HR account has no company");
+                }
+                request.setCompanyName(actor.getCompany().getName());
+            } else if (request.getCompanyName() == null || request.getCompanyName().isBlank()) {
+                throw new IllegalArgumentException("Company is required for admin-created employee");
             }
             var response = companyService.createEmployeeForCompany(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);

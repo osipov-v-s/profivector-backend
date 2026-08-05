@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 @Configuration
-@PropertySource("classpath:enviroment.properties")
+@PropertySource(value = "classpath:enviroment.properties", ignoreResourceNotFound = true)
 public class EnvPropertiesConfig {
     public static final String SECRET_KEY = "app.secret.key";
 }

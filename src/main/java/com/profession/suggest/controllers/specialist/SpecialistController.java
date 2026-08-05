@@ -64,12 +64,22 @@ public class SpecialistController {
         }
 
     }
+    @HasRole({RoleEnum.ADMIN, RoleEnum.SPECIALIST})
     @PutMapping("/specialist/{id}")
-    public ResponseEntity<SpecialistDTO> updateSpecialist(@RequestBody SpecialistDTO specialistDTO, @PathVariable("id") Long id) {
+    public ResponseEntity<SpecialistDTO> updateSpecialist(
+            @RequestBody SpecialistDTO specialistDTO,
+            @PathVariable("id") Long id,
+            @RequestAttribute("accountId") Long accountId) throws AccountNotFoundException {
+        Account actor = accountService.getAccountById(accountId);
+        boolean admin = actor.getRoles().stream().anyMatch(role -> role.getName() == RoleEnum.ADMIN);
+        if (!admin && (actor.getSpecialist() == null || !id.equals(actor.getSpecialist().getId()))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         specialistDTO.setId(id);
         return ResponseEntity.ok(specialistService.update(specialistDTO));
     }
     //TODO there is a lot space for filter fields if need.
+    @HasRole(RoleEnum.ADMIN)
     @GetMapping()
     public ResponseEntity<Page<SpecialistDTO>> getSpecialistsByPage(
             @RequestParam(defaultValue = "0") int page,
@@ -94,10 +104,12 @@ public class SpecialistController {
         return ResponseEntity.ok(professionService.getProfessions());
     }
     @PostMapping("/professions")
+    @HasRole(RoleEnum.ADMIN)
     public ResponseEntity<ProfessionDTO> createProfession(@RequestBody ProfessionDTO professionDTO) {
         return ResponseEntity.ok(professionService.createProfession(professionDTO));
     }
     @DeleteMapping("/professions/{id}")
+    @HasRole(RoleEnum.ADMIN)
     public ResponseEntity<Boolean> deleteProfession(@PathVariable("id") Long id) {
         professionService.deleteById(id);
         return ResponseEntity.noContent().build();
@@ -107,14 +119,17 @@ public class SpecialistController {
         return ResponseEntity.ok(professionSphereService.getProfessionsSpheres());
     }
     @PostMapping("/professions-spheres")
+    @HasRole(RoleEnum.ADMIN)
     public ResponseEntity<ProfessionSphereDTO> createProfessionSphere(@RequestBody ProfessionSphereDTO professionSphereDTO) {
         return ResponseEntity.ok(professionSphereService.create(professionSphereDTO));
     }
     @DeleteMapping("/professions-spheres/{id}")
+    @HasRole(RoleEnum.ADMIN)
     public ResponseEntity<Boolean> deleteProfessionSphere(@PathVariable("id") Long id) {
         professionSphereService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+    @HasRole(RoleEnum.SPECIALIST)
     @GetMapping("/specialist")
     public ResponseEntity<SpecialistDTO> getSpecialist(@RequestAttribute("accountId") Long accountId) throws AccountNotFoundException {
         return ResponseEntity.ok(

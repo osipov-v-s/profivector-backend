@@ -1,6 +1,6 @@
 package com.profession.suggest.database.entities.gender;
 
-import com.profession.suggest.database.entities.users.pupil.Pupil;
+import com.profession.suggest.database.entities.users.applicant.Applicant;
 import com.profession.suggest.database.entities.users.specialist.Specialist;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -22,7 +22,7 @@ public class Gender {
     @Column(name = "name", nullable = false)
     private GenderEnum name;
     @OneToMany(mappedBy = "gender")
-    private List<Pupil> pupils;
+    private List<Applicant> applicants;
     @OneToMany(mappedBy = "gender")
     private List<Specialist> specialists;
 }

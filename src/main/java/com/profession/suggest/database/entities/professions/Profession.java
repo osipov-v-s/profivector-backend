@@ -1,7 +1,6 @@
 package com.profession.suggest.database.entities.professions;
 
-import com.profession.suggest.database.entities.dataanalys.simulation.Simulation;
-import com.profession.suggest.database.entities.dataanalys.vrtests.VRTest;
+import com.profession.suggest.database.entities.users.applicant.Applicant;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,10 +18,8 @@ public class Profession {
     private Long id;
     @Column(name = "name", unique = true)
     private String name;
-    @OneToMany(mappedBy = "profession")
-    private List<Simulation> simulations;
-    @OneToMany(mappedBy = "profession")
-    private List<VRTest> vrTests;
+    @OneToMany(mappedBy = "targetProfession")
+    private List<Applicant> applicants;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profession_sphere_id")
     private ProfessionSphere professionSphere;

@@ -1,5 +1,7 @@
 package com.profession.suggest.controllers.dataanalys.prediction;
 
+import com.profession.suggest.configuration.security.annotation.HasRole;
+import com.profession.suggest.database.entities.auth.role.RoleEnum;
 import com.profession.suggest.database.entities.dataanalys.prediction.Prediction;
 import com.profession.suggest.database.services.dataanalys.prediction.PredictionService;
 import com.profession.suggest.dto.dataanalys.prediction.PredictionDTO;
@@ -17,6 +19,7 @@ public class PredictionController {
     public PredictionController(PredictionService predictionService) {
         this.predictionService = predictionService;
     }
+    @HasRole(RoleEnum.ADMIN)
     @PostMapping("/create")
     public ResponseEntity<?> createPrediction(@RequestPart("prediction") PredictionDTO predictionDTO,
                                                           @RequestPart("file") MultipartFile file) {
@@ -27,10 +30,11 @@ public class PredictionController {
                     .body("Please check all required parameters, cant save prediction");
         }
     }
-    @GetMapping("/pupil/{pupilId}")
-    public ResponseEntity<List<PredictionDTO>> getPredictionsByPupilId(
-            @PathVariable("pupilId") Long pupilId
+    @HasRole(RoleEnum.ADMIN)
+    @GetMapping("/applicant/{applicantId}")
+    public ResponseEntity<List<PredictionDTO>> getPredictionsByApplicantId(
+            @PathVariable("applicantId") Long applicantId
     ) {
-        return ResponseEntity.ok(predictionService.getPredictionsByPupilId(pupilId));
+        return ResponseEntity.ok(predictionService.getPredictionsByApplicantId(applicantId));
     }
 }

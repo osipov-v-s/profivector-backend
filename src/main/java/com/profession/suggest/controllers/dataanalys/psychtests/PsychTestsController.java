@@ -4,7 +4,6 @@ import com.profession.suggest.configuration.security.annotation.HasRole;
 import com.profession.suggest.database.entities.auth.role.RoleEnum;
 import com.profession.suggest.database.services.auth.AccountService;
 import com.profession.suggest.database.services.dataanalys.psychtests.PsychTestService;
-import com.profession.suggest.database.services.pupil.PupilService;
 import com.profession.suggest.dto.dataanalys.psychtests.AccountTestsDTO;
 import com.profession.suggest.dto.dataanalys.psychtests.PsychTestDTO;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +25,8 @@ public class PsychTestsController {
         this.psychTestService = psychTestService;
         this.accountService = accountService;
     }
-    //TODO create test for pupil and specialist
+    // Psychological test results are stored for Applicant or Specialist profiles.
+    @HasRole({RoleEnum.APPLICANT, RoleEnum.SPECIALIST})
     @PostMapping("/create-test")
     public ResponseEntity<PsychTestDTO> createPsychTest(@RequestBody PsychTestDTO requestDTO, @RequestAttribute("accountId") Long accountId) throws AccountNotFoundException {
         return ResponseEntity.ok(
@@ -34,26 +34,33 @@ public class PsychTestsController {
                         requestDTO,
                         accountService.getAccountById(accountId)));
     }
+    @HasRole({RoleEnum.APPLICANT, RoleEnum.SPECIALIST})
     @GetMapping("/my-tests")
     public ResponseEntity<List<PsychTestDTO>> getTestsForAccount(@RequestAttribute("accountId") Long accountId) throws AccountNotFoundException {
         return ResponseEntity.ok(psychTestService.getTestsResultsByAccount(accountService.getAccountById(accountId)));
     }
+    @HasRole({RoleEnum.APPLICANT, RoleEnum.SPECIALIST})
     @GetMapping("/my-recent-tests")
     public ResponseEntity<Map<String, PsychTestDTO>> getAccountRecentTests(@RequestAttribute("accountId") Long accountId) throws AccountNotFoundException {
         return ResponseEntity.ok(psychTestService.getAccountRecentTests(accountService.getAccountById(accountId)));
     }
+    @HasRole({RoleEnum.APPLICANT, RoleEnum.SPECIALIST})
     @GetMapping("/my-tests/type/{testType}")
     public ResponseEntity<List<PsychTestDTO>> getTestsByType(@RequestAttribute("accountId") Long accountId, @PathVariable String testType) throws AccountNotFoundException {
         return ResponseEntity.ok(psychTestService.getAccountTestsByType(accountService.getAccountById(accountId), testType));
     }
-    @HasRole(RoleEnum.ADMIN)
+    @HasRole({RoleEnum.ADMIN, RoleEnum.HR})
     @GetMapping("/completed-tests")
     public ResponseEntity<List<AccountTestsDTO>> getCompletedTestsByDates(@RequestParam("type") String type,
                                                                           @RequestParam("startDate") LocalDateTime startDate,
-                                                                          @RequestParam("endDate") LocalDateTime endDate) {
+                                                                          @RequestParam("endDate") LocalDateTime endDate,
+                                                                          @RequestAttribute("accountId") Long accountId) {
         try {
-            //List<PsychTestDTO> testDTOS = psychTestService.getCompletedTestsByDateRange(type, startDate, endDate);
-            return ResponseEntity.ok(psychTestService.getCompletedTestsByDateRange(type, startDate, endDate));
+            var actor = accountService.getAccountById(accountId);
+            boolean admin = actor.getRoles().stream().anyMatch(role -> role.getName() == RoleEnum.ADMIN);
+            Long companyId = admin || actor.getCompany() == null ? null : actor.getCompany().getId();
+            return ResponseEntity.ok(psychTestService.getCompletedTestsByDateRange(
+                    type, startDate, endDate, companyId));
         } catch (Exception e) {
             return ResponseEntity.status(500).build();
         }

@@ -1,5 +1,7 @@
 package com.profession.suggest.database.entities.users.specialist;
 
+import com.profession.suggest.database.entities.auth.Account;
+import com.profession.suggest.database.entities.users.applicant.Applicant;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,4 +34,8 @@ public class Company {
     private String email;
     @OneToMany(mappedBy = "company", orphanRemoval = false)
     private List<Specialist> specialists;
+    @OneToMany(mappedBy = "company", orphanRemoval = false)
+    private List<Applicant> applicants;
+    @OneToMany(mappedBy = "company", orphanRemoval = false)
+    private List<Account> accounts;
 }

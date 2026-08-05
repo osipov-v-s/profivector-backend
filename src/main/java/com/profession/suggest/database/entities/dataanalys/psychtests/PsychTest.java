@@ -1,6 +1,6 @@
 package com.profession.suggest.database.entities.dataanalys.psychtests;
 
-import com.profession.suggest.database.entities.users.pupil.Pupil;
+import com.profession.suggest.database.entities.users.applicant.Applicant;
 import com.profession.suggest.database.entities.users.specialist.Specialist;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -24,10 +24,10 @@ public class PsychTest {
     private Double completionTimeSeconds;
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
-    //Test completed by pupil
+    // Test completed by an applicant
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pupil_id")
-    private Pupil pupil;
+    @JoinColumn(name = "applicant_id")
+    private Applicant applicant;
     //Test completed by specialist
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "specialist_id")

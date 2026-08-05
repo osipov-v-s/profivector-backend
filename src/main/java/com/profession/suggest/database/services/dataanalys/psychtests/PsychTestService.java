@@ -2,14 +2,14 @@ package com.profession.suggest.database.services.dataanalys.psychtests;
 
 import com.profession.suggest.database.entities.auth.Account;
 import com.profession.suggest.database.entities.auth.role.Role;
+import com.profession.suggest.database.entities.auth.role.RoleEnum;
 import com.profession.suggest.database.entities.dataanalys.psychtests.PsychParam;
 import com.profession.suggest.database.entities.dataanalys.psychtests.PsychTest;
 import com.profession.suggest.database.entities.dataanalys.psychtests.PsychTestType;
 import com.profession.suggest.database.entities.users.User;
-import com.profession.suggest.database.entities.users.pupil.Pupil;
+import com.profession.suggest.database.entities.users.applicant.Applicant;
 import com.profession.suggest.database.entities.users.specialist.Specialist;
 import com.profession.suggest.database.repositories.dataanalys.psychtests.PsychTestRepository;
-import com.profession.suggest.database.services.pupil.PupilService;
 import com.profession.suggest.dto.dataanalys.psychtests.AccountTestsDTO;
 import com.profession.suggest.dto.dataanalys.psychtests.PsychTestDTO;
 import com.profession.suggest.dto.dataanalys.psychtests.PsychTestMapper;
@@ -27,7 +27,6 @@ import java.util.stream.Stream;
 public class PsychTestService {
     private final PsychTestRepository repository;
     private final PsychParamService psychParamService;
-    private final PupilService pupilService;
     private final PsychTestTypeService psychTestTypeService;
     private final PsychTestMapper mapper;
 
@@ -45,23 +44,10 @@ public class PsychTestService {
         }
         psychTest.setPsychParams(params);
         psychTest.setPsychTestType(psychTestType);
-        psychTest.setPupil(account.getPupil());
+        psychTest.setApplicant(account.getApplicant());
         psychTest.setSpecialist(account.getSpecialist());
 
         return mapper.toDTO(repository.save(psychTest));
-    }
-    @Deprecated
-    public List<PsychTestDTO> getPupilTests(Pupil pupil) {
-        List<PsychTest> psychTests = repository.findByPupil(pupil);
-        return psychTests.stream().map( test -> {
-            try {
-                return mapper.toDTO(test);
-            } catch (NullPointerException e) {
-                return null;
-            }
-        })
-        .filter(Objects::nonNull)
-        .collect(Collectors.toList());
     }
     public List<PsychTestDTO> getTestsResultsByAccount(Account account) {
         validateAccountRoles(account);
@@ -71,29 +57,26 @@ public class PsychTestService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
-    @Deprecated
-    public List<PsychTestDTO> getPupilTestByType(Pupil pupil, String testTypeName) {
-        PsychTestType testType = psychTestTypeService.getPsychTestTypeByName(testTypeName);
-        List<PsychTest> psychTests = repository.findByPupilAndPsychTestType(pupil, testType);
-        return psychTests.stream().map(mapper::toDTO).collect(Collectors.toList());
-    }
     public List<PsychTestDTO> getAccountTestsByType(Account account, String testTypeName) {
         validateAccountRoles(account);
         List<PsychTest> psychTests = repository.findByAccountIdAndTestType(account.getId(), testTypeName);
         return psychTests.stream().map(mapper::toDTO).collect(Collectors.toList());
     }
-    public List<AccountTestsDTO> getCompletedTestsByDateRange(String type, LocalDateTime startDate, LocalDateTime endDate) {
+    public List<AccountTestsDTO> getCompletedTestsByDateRange(
+            String type, LocalDateTime startDate, LocalDateTime endDate, Long companyId) {
         List<PsychTest> psychTests;
-        if (Objects.equals(type, "Pupil"))
-            psychTests = repository.findByPupilAndDateRange(startDate, endDate);
+        if (Objects.equals(type, "Applicant"))
+            psychTests = repository.findByApplicantAndDateRange(startDate, endDate);
         else if (Objects.equals(type, "Specialist"))
             psychTests = repository.findBySpecialistAndDateRange(startDate, endDate);
         else
             psychTests = repository.findByDateRange(startDate, endDate);
         Map<Long, AccountTestsDTO> accountMap = new LinkedHashMap<>();
         for (PsychTest test: psychTests) {
-            User user = test.getPupil() != null ? test.getPupil() : test.getSpecialist();
+            User user = test.getApplicant() != null ? test.getApplicant() : test.getSpecialist();
             if (user == null) continue;
+            if (companyId != null && (user.getAccount().getCompany() == null
+                    || !companyId.equals(user.getAccount().getCompany().getId()))) continue;
             Long accountId = user.getAccount().getId();
 
             AccountTestsDTO accountDTO = accountMap.computeIfAbsent(accountId,
@@ -129,13 +112,20 @@ public class PsychTestService {
         ));
     }
     private void validateAccountRoles(Account account) {
-        Pupil pupil = account.getPupil();
+        Applicant applicant = account.getApplicant();
         Specialist specialist = account.getSpecialist();
-        if (pupil == null && specialist == null) {
-            throw new IllegalArgumentException("Account has no role assigned (neither Pupil nor Specialist)");
+        boolean applicantRole = account.getRoles().stream()
+                .anyMatch(role -> role.getName() == RoleEnum.APPLICANT);
+        boolean specialistRole = account.getRoles().stream()
+                .anyMatch(role -> role.getName() == RoleEnum.SPECIALIST);
+        if (applicantRole == specialistRole) {
+            throw new IllegalArgumentException("Exactly one test participant role is required");
         }
-        if (pupil != null && specialist != null) {
-            throw new IllegalArgumentException("Account has both Pupil and Specialist roles - ambiguous");
+        if (applicantRole && applicant == null) {
+            throw new IllegalArgumentException("Applicant profile is missing");
+        }
+        if (specialistRole && specialist == null) {
+            throw new IllegalArgumentException("Specialist profile is missing");
         }
     }
     private void validateRequest(PsychTestDTO psychTestDTO) {

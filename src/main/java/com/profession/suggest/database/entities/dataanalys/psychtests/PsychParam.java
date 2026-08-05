@@ -28,7 +28,7 @@ public class PsychParam {
     @ManyToMany(mappedBy = "psychParams")
     private List<PsychTest> psychTest;
     /**Even here is many to many that only because params use in psychTest also,
-     * in future there is a copmare and search in pupil's params and clusters params that is important
+     * Parameters can later be compared with profession reference clusters.
      * and that's why psychParams can have psychTest or cluster BUT NOT BOTH they use for different purpose
      * and there ALWAYS 100% guarantee one item in psychTest List or cluster list that why name in single number*/
     @ManyToMany(mappedBy = "psychParams")

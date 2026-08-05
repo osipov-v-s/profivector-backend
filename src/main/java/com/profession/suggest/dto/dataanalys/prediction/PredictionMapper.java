@@ -10,7 +10,7 @@ public class PredictionMapper {
         PredictionDTO dto = new PredictionDTO();
 
         dto.setId(prediction.getId());
-        dto.setPupilId(prediction.getPupil().getId());
+        dto.setApplicantId(prediction.getApplicant().getId());
         dto.setFilePath(prediction.getFilePath());
         dto.setPredictionType(prediction.getPredictionType().getName());
         dto.setCreatedAt(prediction.getCreatedAt());

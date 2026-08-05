@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -25,4 +26,8 @@ public class Employee {
     private String jobSatisfaction;
     private String profession;
     private GenderEnum gender;
+    private LocalDate birthday;
+    private Long targetProfessionId;
+    private String targetProfession;
+    private Boolean active;
 }

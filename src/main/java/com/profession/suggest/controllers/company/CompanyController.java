@@ -36,6 +36,7 @@ public class CompanyController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+    @HasRole(RoleEnum.HR)
     @GetMapping()
     public ResponseEntity<?> getMyCompany(@RequestAttribute("accountId") Long accountId) {
         try {
@@ -52,6 +53,7 @@ public class CompanyController {
      * Return all  employees from company depends on requested account
      *
      * */
+    @HasRole(RoleEnum.HR)
     @GetMapping("/employees")
     public ResponseEntity<?> getCompanyEmployees (@RequestAttribute("accountId") Long accountId,
                                                     @RequestParam(required = false) RoleEnum role,

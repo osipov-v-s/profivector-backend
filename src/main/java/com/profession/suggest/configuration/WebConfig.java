@@ -20,32 +20,11 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(jwtValidationInterceptor)
-                .addPathPatterns(
-                        "/api/auth/protected-test",
-                        "/api/psych-tests/**",
-                        "/api/auth/account-roles",
-                        "/api/auth/update-password",
-                        "/api/pupil-subjects/**",
-
-                        "/api/pupils/pupil-data",
-                        "/api/pupils/update-pupil-data",
-                        "/api/pupils/completed-tests",
-                        "/api/pupils/pupil/predictions",
-
-                        "/api/specialists/specialist",
-                        "/api/specialists/update",
-                        "/api/specialists/register-all",
-                        "/api/specialists/completed-tests",
-
-                        "/api/predictions/create",
-
-                        "/api/vr-tests/**",
-
-                        "/api/hr/**",
-                        "/api/company/**",
-
-                        "/api/comparison/**"
-                );
+                .addPathPatterns("/api/**")
+                .excludePathPatterns(
+                        "/api/auth/login",
+                        "/api/auth/is-email-free",
+                        "/api/specialists/register");
     }
 
     @Override

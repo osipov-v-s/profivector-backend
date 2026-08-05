@@ -1,7 +1,8 @@
 package com.profession.suggest.database.entities.auth;
 
 import com.profession.suggest.database.entities.auth.role.Role;
-import com.profession.suggest.database.entities.users.pupil.Pupil;
+import com.profession.suggest.database.entities.users.applicant.Applicant;
+import com.profession.suggest.database.entities.users.specialist.Company;
 import com.profession.suggest.database.entities.users.specialist.Specialist;
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,8 +15,8 @@ import java.util.Set;
 @Table(name = "account")
 @Getter
 @Setter
-@ToString(exclude = {"pupil", "roles"})
-@EqualsAndHashCode(exclude = {"pupil", "roles"})
+@ToString(exclude = {"applicant", "specialist", "company", "roles"})
+@EqualsAndHashCode(exclude = {"applicant", "specialist", "company", "roles"})
 @NoArgsConstructor
 @AllArgsConstructor
 public class Account {
@@ -32,11 +33,20 @@ public class Account {
     private LocalDate createdAt;
     @Column(name = "first_login")
     private Boolean firstLogin;
+    @Column(name = "name", length = 50)
+    private String name;
+    @Column(name = "surname", length = 50)
+    private String surname;
+    @Column(name = "patronymic", length = 50)
+    private String patronymic;
 
     @OneToOne(mappedBy = "account", fetch = FetchType.LAZY)
-    private Pupil pupil;
+    private Applicant applicant;
     @OneToOne(mappedBy = "account", fetch = FetchType.LAZY)
     private Specialist specialist;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id")
+    private Company company;
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinTable(
             name = "account_roles",
