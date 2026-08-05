@@ -6,7 +6,7 @@ plugins {
 
 group = "com.profession"
 version = "0.0.1-SNAPSHOT"
-description = "Backend service for working with students data"
+description = "Backend service for B2B specialist and applicant assessment"
 
 java {
 	toolchain {
@@ -45,6 +45,7 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-security-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+	testRuntimeOnly("com.h2database:h2")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
